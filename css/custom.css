@@ -33,7 +33,7 @@ h1{
 }
 .grid-container2{
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: auto auto auto;
 }
 .grid-container1{
     display: grid;
