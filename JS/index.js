@@ -1,8 +1,14 @@
 document.querySelector('.grid-container').addEventListener('click', addObj);
 document.querySelector('.grid-container1').addEventListener('click', addObj);
 document.querySelector('.grid-container2').addEventListener('click', addObj);
+document.addEventListener('DOMContenrLoaded', showOperations());
 const input = document.querySelector('.inp');
-
+input.addEventListener("keyup", function(event){
+    if(event.keyCode === 13){
+        event.preventDefault();
+        enter();
+    }
+});
 
 function tokenize(inputstr){
     let variables = inputstr.split("");
@@ -49,14 +55,17 @@ function addObj(e){
         }
         if(e.target.textContent == '^2' && input.value !== ''){
             let ans = Number(input.value) * Number(input.value);
+            saveOperation(input.value+'^2 = '+ans);
             input.value = ans;
         }
         if(e.target.textContent == '^3' && input.value !== ''){
             let ans = Number(input.value) * Number(input.value) * Number(input.value);
+            saveOperation(input.value+'^3 = '+ans);
             input.value = ans;
         }
         if(e.target.textContent == 'sqrt' && input.value !== ''){
             let ans = Math.sqrt(Number(input.value));
+            saveOperation('sqrt('+input.value+') = '+ans);
             input.value = ans;
         }
         if(e.target.textContent == '!' && input.value !== ''){
@@ -64,39 +73,93 @@ function addObj(e){
             let n = 1;
             for (let index = 2; index <= ans; index++) {
                 n = n * index;
-                
             }
+            saveOperation(input.value+'! = '+n);
             input.value = n;
         }
         if(e.target.textContent == 'Clear' && input.value !== ''){
             input.value = '';
         }
         if(e.target.textContent == 'Enter' && input.value !== ''){
-            let varsplit = tokenize(input.value);
-            while(varsplit.length !== 1){
-                while(varsplit.indexOf("/") !== -1){
-                    var ln = varsplit.indexOf("/");
-                    varsplit[ln-1] = Number(varsplit[ln-1])/Number(varsplit[ln+1]);
-                    varsplit.splice(ln, 2);
-                }
-                while(varsplit.indexOf("*") !== -1){
-                    var ln = varsplit.indexOf("*");
-                    varsplit[ln-1] = Number(varsplit[ln-1])*Number(varsplit[ln+1]);
-                    varsplit.splice(ln, 2);
-                }
-                while(varsplit.indexOf("+") !== -1){
-                    var ln = varsplit.indexOf("+");
-                    varsplit[ln-1] = Number(varsplit[ln-1])+Number(varsplit[ln+1]);
-                    varsplit.splice(ln, 2);
-                }
-                while(varsplit.indexOf("-") !== -1){
-                    var ln = varsplit.indexOf("-");
-                    varsplit[ln-1] = Number(varsplit[ln-1])-Number(varsplit[ln+1]);
-                    varsplit.splice(ln, 2);
-                }
-                ln = ln + 1;
-            }
-            input.value = varsplit[0];
+            enter();
         }
     }
+}
+function enter(){
+    let varsplit = tokenize(input.value);
+    let opstr = input.value;
+    while(varsplit.length !== 1){
+        while(varsplit.indexOf("/") !== -1){
+            var ln = varsplit.indexOf("/");
+            varsplit[ln-1] = Number(varsplit[ln-1])/Number(varsplit[ln+1]);
+            varsplit.splice(ln, 2);
+        }
+        while(varsplit.indexOf("*") !== -1){
+            var ln = varsplit.indexOf("*");
+            varsplit[ln-1] = Number(varsplit[ln-1])*Number(varsplit[ln+1]);
+            varsplit.splice(ln, 2);
+        }
+        while(varsplit.indexOf("+") !== -1){
+            var ln = varsplit.indexOf("+");
+            varsplit[ln-1] = Number(varsplit[ln-1])+Number(varsplit[ln+1]);
+            varsplit.splice(ln, 2);
+        }
+        while(varsplit.indexOf("-") !== -1){
+            var ln = varsplit.indexOf("-");
+            varsplit[ln-1] = Number(varsplit[ln-1])-Number(varsplit[ln+1]);
+            varsplit.splice(ln, 2);
+        }
+        ln = ln + 1;
+    }
+    input.value = varsplit[0];
+    opstr = opstr + ' = '+ varsplit[0];
+    saveOperation(opstr);
+}
+
+function saveOperation(opstr){
+    let ops;
+    if(localStorage.getItem('operations') === null){
+        ops = [];
+    }else{
+        ops = JSON.parse(localStorage.getItem('operations'));
+    }
+    if (ops.length === 10){
+        ops.splice(0, 1);
+        ops.push(opstr);
+        localStorage.setItem('operations', JSON.stringify(ops));
+        document.getElementById("operationshere").innerHTML = ``;
+        showOperations();
+    }else{
+        ops.push(opstr);
+        localStorage.setItem('operations', JSON.stringify(ops));
+        const li = document.createElement('li');
+        li.textContent = opstr;
+        document.getElementById("operationshere").appendChild(li);
+    }
+    // ops.push(opstr);
+    // localStorage.setItem('operations', JSON.stringify(ops));
+    // const li = document.createElement('li');
+    // li.textContent = opstr;
+    // document.getElementById("operationshere").appendChild(li)
+}
+
+
+function showOperations(){
+    let ops;
+    if(localStorage.getItem('operations') === null){
+        ops = [];
+    }else{
+        ops = JSON.parse(localStorage.getItem('operations'));
+    }
+    // let opshtml = document.getElementById("operationshere").innerHTML=`<ul>`;
+    ops.forEach(function(op){
+        const li = document.createElement('li');
+        li.textContent = op;
+        document.getElementById("operationshere").appendChild(li)
+        // console.log(op);
+        // opshtml = opshtml + `
+        //     <li>${op}</li>
+        // `;
+    });
+    //opshtml = opshtml + `</ul>`;
 }
